@@ -21,7 +21,7 @@ func NewClipboardManager() *ClipboardManager {
 		log.Printf("Make sure X11 is running and DISPLAY environment variable is set")
 		return nil
 	}
-	
+
 	log.Printf("Native clipboard initialized successfully")
 	return &ClipboardManager{
 		native: native,
@@ -38,7 +38,7 @@ func (cm *ClipboardManager) GetClipboard() (string, error) {
 	if cm.native == nil {
 		return "", fmt.Errorf("native clipboard not initialized")
 	}
-	
+
 	content := cm.native.GetContent()
 	return content, nil
 }
@@ -48,7 +48,7 @@ func (cm *ClipboardManager) SetClipboard(content string) error {
 	if cm.native == nil {
 		return fmt.Errorf("native clipboard not initialized")
 	}
-	
+
 	return cm.native.SetContent(content)
 }
 
@@ -57,16 +57,16 @@ func (cm *ClipboardManager) StartMonitoring(ctx context.Context) error {
 	if cm.native == nil {
 		return fmt.Errorf("native clipboard not initialized")
 	}
-	
+
 	log.Printf("Starting clipboard monitoring...")
-	
+
 	// Get initial content
 	initialContent := cm.native.GetContent()
 	cm.native.lastContent = initialContent
-	
+
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -87,12 +87,12 @@ func (cm *ClipboardManager) SetClipboardExternal(content string) error {
 	if cm.native == nil {
 		return fmt.Errorf("native clipboard not initialized")
 	}
-	
+
 	err := cm.native.SetContent(content)
 	if err != nil {
 		return err
 	}
-	
+
 	// Update lastContent to prevent triggering onChange callback
 	cm.native.lastContent = content
 	return nil

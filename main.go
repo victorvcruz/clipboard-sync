@@ -16,16 +16,26 @@ import (
 	"clipboard-sync/internal/sync"
 )
 
+// version is set by GoReleaser via ldflags
+var version = "dev"
+
 func main() {
 	// Command line flags
 	var (
-		targetIP   = flag.String("target", "", "Target device IP address (required)")
-		port       = flag.String("port", "8080", "Port to listen on")
-		targetPort = flag.String("target-port", "8080", "Target device port")
-		sourceID   = flag.String("source-id", "", "Source device identifier (auto-generated if empty)")
+		targetIP    = flag.String("target", "", "Target device IP address (required)")
+		port        = flag.String("port", "8080", "Port to listen on")
+		targetPort  = flag.String("target-port", "8080", "Target device port")
+		sourceID    = flag.String("source-id", "", "Source device identifier (auto-generated if empty)")
+		showVersion = flag.Bool("version", false, "Show version information")
 	)
-	
+
 	flag.Parse()
+
+	// Handle version flag
+	if *showVersion {
+		fmt.Printf("%s\n", version)
+		os.Exit(0)
+	}
 
 	// Validate required parameters
 	if *targetIP == "" {
@@ -67,7 +77,7 @@ func main() {
 	// Set up clipboard change handler
 	clipboardManager.SetOnChange(func(content string) {
 		fmt.Printf("Clipboard changed: %s\n", truncateString(content, 50))
-		
+
 		// Send to target device
 		if err := syncClient.SendClipboard(content); err != nil {
 			fmt.Printf("Failed to sync clipboard: %v\n", err)
@@ -77,7 +87,7 @@ func main() {
 	// Set up server receive handler
 	syncServer.SetOnReceive(func(content, source string) {
 		fmt.Printf("Received clipboard from %s: %s\n", source, truncateString(content, 50))
-		
+
 		// Set clipboard content (this won't trigger the onChange callback)
 		if err := clipboardManager.SetClipboardExternal(content); err != nil {
 			fmt.Printf("Failed to set clipboard: %v\n", err)
@@ -86,7 +96,7 @@ func main() {
 
 	// Start server
 	syncServer.StartAsync()
-	
+
 	// Wait a moment for server to start
 	time.Sleep(100 * time.Millisecond)
 
@@ -104,7 +114,7 @@ func main() {
 
 	fmt.Println("\nShutting down...")
 	cancel()
-	
+
 	// Give a moment for cleanup
 	time.Sleep(100 * time.Millisecond)
 	fmt.Println("Goodbye!")
@@ -124,7 +134,7 @@ func truncateString(s string, maxLen int) string {
 	// Replace newlines with spaces for better display
 	s = strings.ReplaceAll(s, "\n", " ")
 	s = strings.ReplaceAll(s, "\r", " ")
-	
+
 	if len(s) <= maxLen {
 		return s
 	}

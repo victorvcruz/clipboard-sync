@@ -10,11 +10,11 @@ import (
 
 // SyncServer handles receiving clipboard data from remote devices
 type SyncServer struct {
-	port          string
-	mux           *http.ServeMux
-	onReceive     func(string, string) // callback(content, source)
-	lastReceived  map[string]time.Time // track last received time by source
-	sourceID      string
+	port         string
+	mux          *http.ServeMux
+	onReceive    func(string, string) // callback(content, source)
+	lastReceived map[string]time.Time // track last received time by source
+	sourceID     string
 }
 
 // NewSyncServer creates a new sync server instance
@@ -25,7 +25,7 @@ func NewSyncServer(port, sourceID string) *SyncServer {
 		lastReceived: make(map[string]time.Time),
 		sourceID:     sourceID,
 	}
-	
+
 	server.setupRoutes()
 	return server
 }
@@ -48,22 +48,22 @@ func (ss *SyncServer) handleClipboard(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	var data ClipboardData
-	
+
 	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Prevent processing data from the same source (avoid loops)
 	if data.Source == ss.sourceID {
 		fmt.Printf("Ignoring clipboard data from same source: %s\n", data.Source)
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	
+
 	// Check if this is a duplicate (within 1 second)
 	if lastTime, exists := ss.lastReceived[data.Source]; exists {
 		if time.Since(lastTime) < time.Second {
@@ -72,17 +72,17 @@ func (ss *SyncServer) handleClipboard(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	
+
 	// Update last received time
 	ss.lastReceived[data.Source] = time.Now()
-	
+
 	fmt.Printf("Received clipboard from %s: %s\n", data.Source, data.Content)
-	
+
 	// Call the callback function if set
 	if ss.onReceive != nil {
 		ss.onReceive(data.Content, data.Source)
 	}
-	
+
 	w.WriteHeader(http.StatusOK)
 }
 

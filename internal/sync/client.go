@@ -42,24 +42,24 @@ func (sc *SyncClient) SendClipboard(content string) error {
 		Timestamp: time.Now(),
 		Source:    sc.sourceID,
 	}
-	
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshal clipboard data: %w", err)
 	}
-	
+
 	url := fmt.Sprintf("http://%s:%s/clipboard", sc.targetIP, sc.targetPort)
-	
+
 	resp, err := sc.httpClient.Post(url, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to send clipboard data to %s: %w", url, err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("server returned status %d", resp.StatusCode)
 	}
-	
+
 	fmt.Printf("Successfully sent clipboard to %s:%s\n", sc.targetIP, sc.targetPort)
 	return nil
 }

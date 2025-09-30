@@ -1,0 +1,46 @@
+name: "release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release"
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag to release"
+        type: string
+        required: true
+    secrets:
+        GORELEASER_GITHUB_TOKEN:
+          required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: refs/tags/${{ inputs.tag }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2.7.0
+        with:
+          args: release --clean
+          version: "<2"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ inputs.tag }}
