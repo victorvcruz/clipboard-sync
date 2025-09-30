@@ -4,7 +4,8 @@ before:
     hooks:
       - go mod download
 builds:
-  - main: ./main.go
+  - id: "linux-amd64"
+    main: ./main.go
     binary: clipboard-sync
     ldflags:
       - -s -w -X main.version={{.Version}}
@@ -15,8 +16,20 @@ builds:
       - linux
     goarch:
       - amd64
+    flags:
+      - -tags=netgo
+  - id: "linux-arm64"
+    main: ./main.go
+    binary: clipboard-sync
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+    goos:
+      - linux
+    goarch:
       - arm64
-    # Only build for Linux since this uses X11/xclip
     flags:
       - -tags=netgo
 archives:
