@@ -59,7 +59,7 @@ release:
     
     ### Using install script:
     ```bash
-    curl -sSL https://github.com/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Tag }}/install.sh | bash
+    curl -sSL https://github.com/victorvcruz/clipboard-sync/releases/download/{{ .Tag }}/install.sh | bash
     ```
     
     ### Manual installation:
@@ -71,7 +71,7 @@ release:
     - Linux with X11
     - libX11-dev (for compilation)
     
-    **Full Changelog**: https://github.com/{{ .Env.GITHUB_REPOSITORY }}/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/victorvcruz/clipboard-sync/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 nfpms:
   - id: clipboard-sync
