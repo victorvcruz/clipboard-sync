@@ -1,24 +1,30 @@
 package clipboard
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"os/exec"
-	"strings"
+	"log"
 	"time"
 )
 
-// ClipboardManager handles clipboard operations for Linux
+// ClipboardManager handles clipboard operations using native CGO implementation
 type ClipboardManager struct {
-	lastContent string
-	onChange    func(string)
+	native   *NativeClipboard
+	onChange func(string)
 }
 
 // NewClipboardManager creates a new clipboard manager instance
 func NewClipboardManager() *ClipboardManager {
+	native, err := NewNativeClipboard()
+	if err != nil {
+		log.Printf("Error: Failed to initialize native clipboard: %v", err)
+		log.Printf("Make sure X11 is running and DISPLAY environment variable is set")
+		return nil
+	}
+	
+	log.Printf("Native clipboard initialized successfully")
 	return &ClipboardManager{
-		lastContent: "",
+		native: native,
 	}
 }
 
@@ -27,44 +33,38 @@ func (cm *ClipboardManager) SetOnChange(callback func(string)) {
 	cm.onChange = callback
 }
 
-// GetClipboard retrieves the current clipboard content using xclip
+// GetClipboard retrieves the current clipboard content using native implementation
 func (cm *ClipboardManager) GetClipboard() (string, error) {
-	cmd := exec.Command("xclip", "-selection", "clipboard", "-o")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	
-	err := cmd.Run()
-	if err != nil {
-		return "", fmt.Errorf("failed to get clipboard content: %w", err)
+	if cm.native == nil {
+		return "", fmt.Errorf("native clipboard not initialized")
 	}
 	
-	return strings.TrimSpace(out.String()), nil
+	content := cm.native.GetContent()
+	return content, nil
 }
 
-// SetClipboard sets the clipboard content using xclip
+// SetClipboard sets the clipboard content using native implementation
 func (cm *ClipboardManager) SetClipboard(content string) error {
-	cmd := exec.Command("xclip", "-selection", "clipboard")
-	cmd.Stdin = strings.NewReader(content)
-	
-	err := cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to set clipboard content: %w", err)
+	if cm.native == nil {
+		return fmt.Errorf("native clipboard not initialized")
 	}
 	
-	return nil
+	return cm.native.SetContent(content)
 }
 
-// StartMonitoring starts monitoring clipboard changes
+// StartMonitoring starts monitoring clipboard changes using native implementation
 func (cm *ClipboardManager) StartMonitoring(ctx context.Context) error {
-	// Get initial content
-	initialContent, err := cm.GetClipboard()
-	if err != nil {
-		// If we can't get initial content, start with empty string
-		initialContent = ""
+	if cm.native == nil {
+		return fmt.Errorf("native clipboard not initialized")
 	}
-	cm.lastContent = initialContent
 	
-	ticker := time.NewTicker(500 * time.Millisecond)
+	log.Printf("Starting clipboard monitoring...")
+	
+	// Get initial content
+	initialContent := cm.native.GetContent()
+	cm.native.lastContent = initialContent
+	
+	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
 	
 	for {
@@ -72,16 +72,8 @@ func (cm *ClipboardManager) StartMonitoring(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			currentContent, err := cm.GetClipboard()
-			if err != nil {
-				// Log error but continue monitoring
-				fmt.Printf("Error getting clipboard content: %v\n", err)
-				continue
-			}
-			
-			// Check if content has changed
-			if currentContent != cm.lastContent {
-				cm.lastContent = currentContent
+			if cm.native.HasChanged() {
+				currentContent := cm.native.GetContent()
 				if cm.onChange != nil && currentContent != "" {
 					cm.onChange(currentContent)
 				}
@@ -92,12 +84,23 @@ func (cm *ClipboardManager) StartMonitoring(ctx context.Context) error {
 
 // SetClipboardExternal sets clipboard content from external source (to avoid triggering onChange)
 func (cm *ClipboardManager) SetClipboardExternal(content string) error {
-	err := cm.SetClipboard(content)
+	if cm.native == nil {
+		return fmt.Errorf("native clipboard not initialized")
+	}
+	
+	err := cm.native.SetContent(content)
 	if err != nil {
 		return err
 	}
 	
 	// Update lastContent to prevent triggering onChange callback
-	cm.lastContent = content
+	cm.native.lastContent = content
 	return nil
+}
+
+// Close cleans up native clipboard resources
+func (cm *ClipboardManager) Close() {
+	if cm.native != nil {
+		cm.native.Close()
+	}
 }

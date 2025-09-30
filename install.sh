@@ -31,37 +31,40 @@ fi
 
 echo "✅ Go version $GO_VERSION detected"
 
-# Install system dependencies
+# Check system dependencies
 echo "📦 Checking system dependencies..."
 
-# Check if xclip is already installed
-if command -v xclip &> /dev/null; then
-    echo "✅ xclip is already installed"
+# Check if X11 libraries are available (required for native clipboard)
+if pkg-config --exists x11 2>/dev/null; then
+    echo "✅ X11 development libraries found"
+elif ls /usr/lib/*/libX11.so* >/dev/null 2>&1 || ls /usr/lib/libX11.so* >/dev/null 2>&1; then
+    echo "✅ X11 runtime libraries found"
 else
-    echo "   xclip not found. Installing..."
+    echo "⚠️  X11 libraries not found. Installing libx11-dev..."
     
     if command -v apt-get &> /dev/null; then
-        echo "   Installing xclip via apt-get..."
+        echo "   Installing libx11-dev via apt-get..."
         sudo apt-get update
-        sudo apt-get install -y xclip
+        sudo apt-get install -y libx11-dev
     elif command -v yum &> /dev/null; then
-        echo "   Installing xclip via yum..."
-        sudo yum install -y xclip
+        echo "   Installing libX11-devel via yum..."
+        sudo yum install -y libX11-devel
     elif command -v pacman &> /dev/null; then
-        echo "   Installing xclip via pacman..."
-        sudo pacman -S --noconfirm xclip
+        echo "   Installing libx11 via pacman..."
+        sudo pacman -S --noconfirm libx11
     else
-        echo "❌ Package manager not found. Please install xclip manually:"
-        echo "   Ubuntu/Debian: sudo apt-get install xclip"
-        echo "   CentOS/RHEL:   sudo yum install xclip"
-        echo "   Arch Linux:    sudo pacman -S xclip"
+        echo "❌ Package manager not found. Please install X11 development libraries manually:"
+        echo "   Ubuntu/Debian: sudo apt-get install libx11-dev"
+        echo "   CentOS/RHEL:   sudo yum install libX11-devel"
+        echo "   Arch Linux:    sudo pacman -S libx11"
         exit 1
     fi
     
-    echo "✅ xclip installed successfully"
+    echo "✅ X11 libraries installed successfully"
 fi
 
-echo "✅ System dependencies installed"
+echo "ℹ️  Using native X11 clipboard implementation (no external tools required)"
+echo "✅ System dependencies checked"
 
 # Build the application
 echo "🔨 Building Clipboard Sync..."

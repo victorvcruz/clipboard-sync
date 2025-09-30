@@ -24,6 +24,7 @@ func main() {
 		targetPort = flag.String("target-port", "8080", "Target device port")
 		sourceID   = flag.String("source-id", "", "Source device identifier (auto-generated if empty)")
 	)
+	
 	flag.Parse()
 
 	// Validate required parameters
