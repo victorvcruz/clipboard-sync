@@ -1,0 +1,55 @@
+name: "release"
+
+on:
+  push:
+    tags:
+      - 'v*'
+      
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release"
+        type: string
+        required: true
+
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag to release"
+        type: string
+        required: true
+    secrets:
+        GORELEASER_GITHUB_TOKEN:
+          required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+
+      - name: Install X11 development libraries and cross-compilation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev gcc-aarch64-linux-gnu
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 'stable'
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2.7.0
+        with:
+          args: release --clean
+          version: "<2"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GORELEASER_GITHUB_TOKEN }}
+          GORELEASER_CURRENT_TAG: ${{ inputs.tag || github.ref_name }}
