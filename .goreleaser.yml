@@ -5,7 +5,7 @@ before:
       - go mod download
 builds:
   - id: "linux-amd64"
-    main: ./cmd/main.go
+    main: ./main.go
     binary: clipboard-sync
     ldflags:
       - -s -w -X main.version={{.Version}}
@@ -19,7 +19,7 @@ builds:
     flags:
       - -tags=netgo
   - id: "linux-arm64"
-    main: ./cmd/main.go
+    main: ./main.go
     binary: clipboard-sync
     ldflags:
       - -s -w -X main.version={{.Version}}

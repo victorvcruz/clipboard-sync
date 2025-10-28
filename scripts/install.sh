@@ -47,7 +47,7 @@ fi
 
 echo "🔨 Building application..."
 go mod tidy >/dev/null 2>&1
-go build -o bin/clipboard-sync ./cmd/clipboard-sync/
+go build -o bin/clipboard-sync .
 
 echo "📍 Installing to system..."
 sudo cp bin/clipboard-sync /usr/local/bin/
