@@ -41,8 +41,6 @@ archives:
     files:
       - README.md
       - LICENSE
-      - install.sh
-      - show-ip.sh
 checksum:
     name_template: "checksum.txt"
 snapshot:
