@@ -52,43 +52,6 @@ changelog:
 release:
   prerelease: false
   make_latest: true
-  footer: |
-    ## Installation
-    
-    ### Using install script:
-    ```bash
-    curl -sSL https://github.com/victorvcruz/clipboard-sync/releases/download/{{ .Tag }}/install.sh | bash
-    ```
-    
-    ### Manual installation:
-    1. Download the appropriate binary for your system
-    2. Make it executable: `chmod +x clipboard-sync`
-    3. Move to PATH: `sudo mv clipboard-sync /usr/local/bin/`
-    
-    ## Requirements
-    - Linux with X11
-    - libX11-dev (for compilation)
-    
-    **Full Changelog**: https://github.com/victorvcruz/clipboard-sync/compare/{{ .PreviousTag }}...{{ .Tag }}
-
-nfpms:
-  - id: clipboard-sync
-    package_name: clipboard-sync
-    vendor: Victor Hugo Vieira Cruz
-    homepage: https://github.com/victorvcruz/clipboard-sync
-    maintainer: Victor Hugo Vieira Cruz <your-email@example.com>
-    description: |-
-      A tool for synchronizing clipboard content between Linux devices.
-      Supports real-time clipboard sharing across multiple Linux machines.
-    license: MIT
-    formats:
-      - deb
-      - rpm
-    dependencies:
-      - libx11-6
-    recommends:
-      - xclip
-    bindir: /usr/bin
 
 git:
   prerelease_suffix: "-"
