@@ -19,7 +19,7 @@ builds:
     flags:
       - -tags=netgo
   - id: "linux-arm64"
-    main: ./main.go
+    main: ./cmd/main.go
     binary: clipboard-sync
     ldflags:
       - -s -w -X main.version={{.Version}}
