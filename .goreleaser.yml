@@ -5,7 +5,7 @@ before:
       - go mod download
 builds:
   - id: "linux-amd64"
-    main: ./main.go
+    main: ./cmd/main.go
     binary: clipboard-sync
     ldflags:
       - -s -w -X main.version={{.Version}}
