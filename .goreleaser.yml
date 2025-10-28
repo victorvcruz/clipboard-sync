@@ -1,0 +1,105 @@
+---
+project_name: clipboard-sync
+before:
+    hooks:
+      - go mod download
+builds:
+  - id: "linux-amd64"
+    main: ./main.go
+    binary: clipboard-sync
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=1
+      - CC=gcc
+    goos:
+      - linux
+    goarch:
+      - amd64
+    flags:
+      - -tags=netgo
+  - id: "linux-arm64"
+    main: ./main.go
+    binary: clipboard-sync
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=1
+      - CC=aarch64-linux-gnu-gcc
+    goos:
+      - linux
+    goarch:
+      - arm64
+    flags:
+      - -tags=netgo
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - README.md
+      - LICENSE
+      - install.sh
+      - show-ip.sh
+checksum:
+    name_template: "checksum.txt"
+snapshot:
+    name_template: "{{ .Tag }}-next"
+changelog:
+    sort: asc
+    use: github-native
+
+release:
+  prerelease: false
+  make_latest: true
+  footer: |
+    ## Installation
+    
+    ### Using install script:
+    ```bash
+    curl -sSL https://github.com/victorvcruz/clipboard-sync/releases/download/{{ .Tag }}/install.sh | bash
+    ```
+    
+    ### Manual installation:
+    1. Download the appropriate binary for your system
+    2. Make it executable: `chmod +x clipboard-sync`
+    3. Move to PATH: `sudo mv clipboard-sync /usr/local/bin/`
+    
+    ## Requirements
+    - Linux with X11
+    - libX11-dev (for compilation)
+    
+    **Full Changelog**: https://github.com/victorvcruz/clipboard-sync/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+nfpms:
+  - id: clipboard-sync
+    package_name: clipboard-sync
+    vendor: Victor Hugo Vieira Cruz
+    homepage: https://github.com/victorvcruz/clipboard-sync
+    maintainer: Victor Hugo Vieira Cruz <your-email@example.com>
+    description: |-
+      A tool for synchronizing clipboard content between Linux devices.
+      Supports real-time clipboard sharing across multiple Linux machines.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    dependencies:
+      - libx11-6
+    recommends:
+      - xclip
+    bindir: /usr/bin
+    contents:
+      - src: ./install.sh
+        dst: /usr/share/clipboard-sync/install.sh
+        file_info:
+          mode: 0755
+      - src: ./show-ip.sh
+        dst: /usr/share/clipboard-sync/show-ip.sh
+        file_info:
+          mode: 0755
+
+git:
+  prerelease_suffix: "-"

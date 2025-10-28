@@ -1,0 +1,51 @@
+version: "2"
+run:
+  concurrency: 4
+  timeout: 10m
+  issue-exit-code: 1
+  tests: true
+  go: '1.23.2'
+
+output:
+  sort-results: true
+
+linters:
+  disable-all: true
+  fast: false
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - errorlint
+    - exhaustive
+    - goconst
+    - misspell
+    - musttag
+    - unconvert
+    - usestdlibvars
+  settings:
+    govet:
+      disable:
+        - fieldalignment
+    exhaustive:
+      default-signifies-exhaustive: true
+    goconst:
+      ignore-tests: true
+    misspell:
+      locale: US
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines
+    - gci
+
+issues:
+  fix: true
