@@ -89,15 +89,6 @@ nfpms:
     recommends:
       - xclip
     bindir: /usr/bin
-    contents:
-      - src: ./install.sh
-        dst: /usr/share/clipboard-sync/install.sh
-        file_info:
-          mode: 0755
-      - src: ./show-ip.sh
-        dst: /usr/share/clipboard-sync/show-ip.sh
-        file_info:
-          mode: 0755
 
 git:
   prerelease_suffix: "-"
